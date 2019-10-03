@@ -13,7 +13,6 @@ router.get('/linkedin/failure', (req, res) => {
     res.render('../views/failure.html');
 });
 
-
 // Linkedin API Requests
 router.get('/linkedin/api/:token', (req, res) => {
     const token = req.params.token;

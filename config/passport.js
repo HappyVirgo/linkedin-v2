@@ -11,8 +11,6 @@ passport.use(new LinkedInStrategy({
     callbackURL: url + '/auth/linkedin/callback',
     profileFields: ['r_ad_campaigns', 'rw_organization', 'r_liteprofile', 'rw_organization_admin', 'r_organization_social', 'w_organization_social']
 }, (accessToken, refreshToken, profile, callback) => {
-    console.log('success auth');
-    console.log(accessToken);
     var user = {
         accessToken: accessToken
     };
