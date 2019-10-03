@@ -29,4 +29,4 @@ Now, you can get accessToken
 GET http://localhost:4001/auth/linkedin/api/:token
 ```
 
-`:token` - Please copy your oauth token here
+`token` - Please copy your oauth token here
