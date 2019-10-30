@@ -26,7 +26,15 @@ Now, you can get accessToken
 ## API request
 
 ```
-GET http://localhost:4001/auth/linkedin/api/:token
-```
+POST http://localhost:4001/auth/linkedin/api
 
-`:token` - Please copy your oauth token here
+Headers: {
+    "token": "<your_oauth_token_here>"
+    "Content-Type": "application/json"
+}
+
+Body {
+    "start_date": "",
+    "end_date": ""
+}
+```
