@@ -9,7 +9,7 @@ passport.use(new LinkedInStrategy({
     clientID: client_id,
     clientSecret: client_secret,
     callbackURL: url + '/auth/linkedin/callback',
-    profileFields: ['r_ad_campaigns', 'rw_organization', 'r_liteprofile', 'rw_organization_admin', 'r_organization_social', 'w_organization_social']
+    scope: ['r_emailaddress', 'r_ads', 'w_organization_social', 'rw_ads', 'r_basicprofile', 'r_liteprofile', 'r_ads_reporting', 'r_organization_social', 'rw_organization_admin', 'w_member_social', 'r_1st_connections_size'],
 }, (accessToken, refreshToken, profile, callback) => {
     var user = {
         accessToken: accessToken
