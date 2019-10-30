@@ -5,8 +5,9 @@ const passport = require('../config/passport');
 
 router.get('/linkedin', passport.authenticate('linkedin'));
 
-router.get('/linkedin/callback', passport.authenticate('linkedin', { failureRedirect: '/social/linkedin/failure' }), (req, res) => {
-    res.render('../views/success.html', { token: req.user.accessToken });
+router.get('/linkedin/callback', passport.authenticate('linkedin', { failureRedirect: '/social/linkedin/failure' }), async (req, res) => {
+    const data = await getInfo(req.user.accessToken, '2019-01-01 00:00:00', '2019-01-01 12:00:00');
+    res.render('../views/success.html', { token: JSON.stringify(data) });
 });
 
 router.get('/linkedin/failure', (req, res) => {
@@ -30,6 +31,56 @@ const sendGet = (url, token) => {
         });
     });
 };
+
+const getInfo = async (token, start_date = null, end_date = null) => {
+    var start_date = new Date(start_date);
+    var end_date = new Date(end_date);
+    var unique_visitors = 0, new_followers = 0, post_impressions = 0, custom_button_clicks = 0;
+    
+    try {
+        var url = `https://api.linkedin.com/v2/organizationPageStatistics?q=organization&organization=urn:li:organization:39763&timeIntervals.timeGranularityType=DAY&timeIntervals.timeRange.start=${start_date.getTime()}&timeIntervals.timeRange.end=${end_date.getTime()}`;
+        var pageInfo = await sendGet(url, token);
+        pageInfo.elements.forEach(element => {
+            element.totalPageStatistics.clicks.mobileCustomButtonClickCounts.forEach(obj => {
+                custom_button_clicks += obj.clicks * 1;
+            });
+            element.totalPageStatistics.clicks.desktopCustomButtonClickCounts.forEach(obj => {
+                custom_button_clicks += obj.clicks * 1;
+            });
+            var views = element.totalPageStatistics.views
+            unique_visitors += views.allPageViews.uniquePageViews * 1;
+        });
+
+        url = `https://api.linkedin.com/v2/organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:39763&timeIntervals.timeGranularityType=DAY&timeIntervals.timeRange.start=${start_date.getTime()}&timeIntervals.timeRange.end=${end_date.getTime()}`;
+        var followerInfo = await sendGet(url, token);
+        followerInfo.elements.forEach(element => {
+            new_followers += element.followerGains.paidFollowerGain * 1;
+            new_followers += element.followerGains.organicFollowerGain * 1;
+        });
+
+        url = `https://api.linkedin.com/v2/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:39763&timeIntervals.timeGranularityType=DAY&timeIntervals.timeRange.start=${start_date.getTime()}&timeIntervals.timeRange.end=${end_date.getTime()}`;
+        var shareInfo = await sendGet(url, token);
+        shareInfo.elements.forEach(element => {
+            // post_impressions += element.totalShareStatistics.uniqueImpressionsCount * 1;
+            post_impressions += element.totalShareStatistics.impressionCount * 1;
+        });
+
+        return {
+            success: true,
+            from: start_date,
+            to: end_date,
+            data: {
+                unique_visitors,
+                new_followers,
+                post_impressions,
+                custom_button_clicks,
+                shareInfo
+            }
+        };
+    } catch(err) {
+        return { success: false, message: 'Error occurred' };
+    }
+}
 
 // Linkedin API Requests
 router.post('/linkedin/api', async (req, res) => {
